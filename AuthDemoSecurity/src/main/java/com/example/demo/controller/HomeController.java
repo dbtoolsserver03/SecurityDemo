@@ -1,0 +1,18 @@
+package com.example.demo.controller;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+public class HomeController {
+
+
+	@RequestMapping("/home")
+	public String hanle01() {
+		log.info("/home 请求进来了....");
+		return "home";
+	}
+}
