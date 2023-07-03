@@ -50,6 +50,8 @@ public class SecurityConfig {
 //						.successForwardUrl("/home")   //不会跳转到之前请求路径
 						.defaultSuccessUrl("/home",true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
 						.successHandler(new MyAuthenticationSuccessHandler())
+//						.failureForwardUrl("/login.html")
+						.failureUrl("/login.html")// 默认谁失败之后redirect跳转
 						.permitAll()
 				).csrf((csrf) -> csrf.disable())
 //				.httpBasic(withDefaults())

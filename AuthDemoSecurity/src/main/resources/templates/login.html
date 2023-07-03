@@ -9,6 +9,9 @@
             Invalid username and password.</div>
         <div th:if="${param.logout}">
             You have been logged out.</div>
+
+         request:<div th:text="${SPRING_SECURITY_LAST_EXCEPTION}"></div>
+         session:<div th:text="${session.SPRING_SECURITY_LAST_EXCEPTION}"></div>
         <form th:action="@{/doLogin}" method="post">
             <div>
             <input type="text" name="uname" value="root" placeholder="Username"/>
