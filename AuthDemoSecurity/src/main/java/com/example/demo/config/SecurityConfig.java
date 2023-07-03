@@ -49,6 +49,7 @@ public class SecurityConfig {
 						.passwordParameter("pwd")
 //						.successForwardUrl("/home")   //不会跳转到之前请求路径
 						.defaultSuccessUrl("/home",true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
+						.successHandler(new MyAuthenticationSuccessHandler())
 						.permitAll()
 				).csrf((csrf) -> csrf.disable())
 //				.httpBasic(withDefaults())
