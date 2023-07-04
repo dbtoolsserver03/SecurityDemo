@@ -23,6 +23,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
 /**
  * An example of explicitly configuring Spring Security with the defaults.
@@ -53,8 +55,17 @@ public class SecurityConfig {
 //						.failureForwardUrl("/login.html")
 //						.failureUrl("/login.html")// 默认谁失败之后redirect跳转
 						.failureHandler(new MyAuthenticationFailureHandler())
+
 						.permitAll()
-				).csrf((csrf) -> csrf.disable())
+				)
+				.logout((form)->form.logoutRequestMatcher(new OrRequestMatcher(
+						new OrRequestMatcher(new AntPathRequestMatcher("/aa","GET")),
+						new OrRequestMatcher(new AntPathRequestMatcher("/bb","POST")),
+						new OrRequestMatcher(new AntPathRequestMatcher("/logout","GET"))
+						)).logoutSuccessUrl("/login.html")
+				)
+
+				.csrf((csrf) -> csrf.disable())
 //				.httpBasic(withDefaults())
 				.formLogin(withDefaults());
 //		http.exceptionHandling((exceptions) -> exceptions
