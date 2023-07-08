@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -63,7 +64,16 @@ public class SecurityConfig {
         loginFilter.setFilterProcessesUrl("/doLogin");//指定认证 url
         loginFilter.setUsernameParameter("uname");//指定接收json 用户名 key
         loginFilter.setPasswordParameter("passwd");//指定接收 json 密码 key
-        loginFilter.setAuthenticationManager(authenticationManagerBean());
+        
+        
+//		CasAuthenticationFilter filter = new CasAuthenticationFilter();
+//		CasAuthenticationProvider casAuthenticationProvider = casAuthenticationProvider(userDetailsService);
+//		filter.setAuthenticationManager(new ProviderManager(casAuthenticationProvider));
+        
+        
+//		loginFilter.setAuthenticationManager(authenticationManagerBean());
+        
+        loginFilter.setAuthenticationManager(new ProviderManager(authenticationProvider()));
         //认证成功处理
         loginFilter.setAuthenticationSuccessHandler((req, resp, authentication) -> {
             Map<String, Object> result = new HashMap<String, Object>();
