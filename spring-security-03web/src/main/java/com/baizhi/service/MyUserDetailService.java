@@ -10,13 +10,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 @Service
-public class MyUserDetailsService implements UserDetailsService {
+public class MyUserDetailService implements UserDetailsService {
 
 
     private final UserDao userDao;
 
     @Autowired
-    public MyUserDetailsService(UserDao userDao) {
+    public MyUserDetailService(UserDao userDao) {
         this.userDao = userDao;
     }
 

@@ -27,7 +27,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-import com.baizhi.service.MyUserDetailsService;
+import com.baizhi.service.MyUserDetailService;
 
 /**
  * An example of explicitly configuring Spring Security with the defaults.
@@ -36,10 +36,10 @@ import com.baizhi.service.MyUserDetailsService;
  */
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfigure {
 	
     @Autowired
-    private MyUserDetailsService myUserDetailsService;
+    private MyUserDetailService myUserDetailsService;
     @Bean
     DaoAuthenticationProvider  authenticationProvider() {
     	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider ();
