@@ -33,6 +33,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
@@ -137,7 +138,12 @@ public class SecurityConfig {
 			.csrf((csrf) -> csrf.disable())//csrf 关闭
 			//				.httpBasic(withDefaults())
 			.formLogin(withDefaults());
-
+		
+        // at: 用来某个 filter 替换过滤器链中哪个 filter
+        // before: 放在过滤器链中哪个 filter 之前
+        // after: 放在过滤器链中那个 filter 之后
+        http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
+   
 		// @formatter:on
 		return http.build();
 	}
