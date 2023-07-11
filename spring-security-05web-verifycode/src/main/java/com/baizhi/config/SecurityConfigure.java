@@ -55,6 +55,7 @@ public class SecurityConfigure {
 			.authorizeHttpRequests((authorize) -> authorize
 					.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
 					.requestMatchers("/login.html").permitAll()
+					.requestMatchers("/vc.jpg").permitAll()
 					.anyRequest().authenticated())
 			.formLogin((form) -> form
 					.loginPage("/login.html")
