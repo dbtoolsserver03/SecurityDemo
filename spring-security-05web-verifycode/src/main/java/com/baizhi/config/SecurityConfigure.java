@@ -22,11 +22,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.baizhi.security.filter.KaptchaFilter;
 import com.baizhi.service.MyUserDetailService;
 
 /**
@@ -38,13 +43,49 @@ import com.baizhi.service.MyUserDetailService;
 @EnableWebSecurity
 public class SecurityConfigure {
 	
+	
+	
+	@Autowired
+	AuthenticationConfiguration authenticationConfiguration;
+
+	public AuthenticationManager authenticationManager() throws Exception {
+	    AuthenticationManager authenticationManager = 
+	        authenticationConfiguration.getAuthenticationManager();
+	    return authenticationManager;
+	}
+	
+	
+//	
     @Autowired
     private MyUserDetailService myUserDetailsService;
+//    @Bean
+//    DaoAuthenticationProvider  authenticationProvider() {
+//    	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider ();
+//        authenticationProvider.setUserDetailsService(myUserDetailsService);
+//        return authenticationProvider;
+//    }
+    
     @Bean
-    DaoAuthenticationProvider  authenticationProvider() {
-    	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider ();
-        authenticationProvider.setUserDetailsService(myUserDetailsService);
-        return authenticationProvider;
+    public KaptchaFilter kaptchaFilter() throws Exception {
+        KaptchaFilter kaptchaFilter = new KaptchaFilter();
+        kaptchaFilter.setFilterProcessesUrl("/doLogin");
+        kaptchaFilter.setUsernameParameter("uname");
+        kaptchaFilter.setPasswordParameter("passwd");
+        kaptchaFilter.setKaptchaParameter("kaptcha");
+        
+        //指定认证管理器
+        kaptchaFilter.setAuthenticationManager(authenticationManager());
+
+        //指定认证成功处理
+        kaptchaFilter.setAuthenticationSuccessHandler((req, resp, auth) -> {
+            resp.sendRedirect("/index.html");
+            
+        });
+        //指定认证失败处理
+        kaptchaFilter.setAuthenticationFailureHandler((req, resp, ex) -> {
+            resp.sendRedirect("/login.html");
+        });
+        return kaptchaFilter;
     }
     
     
@@ -52,29 +93,72 @@ public class SecurityConfigure {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		// @formatter:off
 		http
-			.authorizeHttpRequests((authorize) -> authorize
-					.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-					.requestMatchers("/login.html").permitAll()
-					.requestMatchers("/vc.jpg").permitAll()
+		.authorizeHttpRequests((authorize) -> authorize
+				.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+				.requestMatchers("/login.html").permitAll()
+				.requestMatchers("/vc.jpg").permitAll()
 					.anyRequest().authenticated())
-			.formLogin((form) -> form
-					.loginPage("/login.html")
-					.loginProcessingUrl("/doLogin")
-					.usernameParameter("uname")
-					.passwordParameter("passwd")
-					//						.successForwardUrl("/home")   //不会跳转到之前请求路径
-					.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
-					.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
-					.permitAll())
+//			.formLogin((form) -> form
+//					.loginPage("/login.html")
+//					)
+		
+		.formLogin((form) -> form
+				.loginPage("/login.html")
+				.loginProcessingUrl("/doLogin")
+				.usernameParameter("uname")
+				.passwordParameter("passwd")
+				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
+				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
+				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
+				.permitAll())
+//		
+		
 			.logout((form) -> form.logoutUrl("/logout")
 					.logoutSuccessUrl("/login.html"))
 	
-			.csrf((csrf) -> csrf.disable())//csrf 关闭
+			.csrf(AbstractHttpConfigurer::disable)//csrf 关闭
+			.authenticationProvider(authenticationProvider())
 			//				.httpBasic(withDefaults())
 			.formLogin(withDefaults());
-
+		
+        // at: 用来某个 filter 替换过滤器链中哪个 filter
+        // before: 放在过滤器链中哪个 filter 之前
+        // after: 放在过滤器链中那个 filter 之后
+        //http.addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+   
 		// @formatter:on
 		return http.build();
 	}
+	
+	
+	
+
+	 
+    /**
+     * 调用loadUserByUsername获得UserDetail信息，在AbstractUserDetailsAuthenticationProvider里执行用户状态检查
+     *
+     * @return
+     */
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        // DaoAuthenticationProvider 从自定义的 userDetailsService.loadUserByUsername 方法获取UserDetails
+        authProvider.setUserDetailsService(myUserDetailsService);
+        // 设置密码编辑器
+        //authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
+    }
+ 
+    /**
+     * 登录时需要调用AuthenticationManager.authenticate执行一次校验
+     *
+     * @param config
+     * @return
+     * @throws Exception
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 
 }

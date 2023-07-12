@@ -28,8 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -37,7 +37,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
-import com.baizhi.service.MyUserDetailService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -49,15 +48,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @EnableWebSecurity
 public class SecurityConfig {
 	
-    @Autowired
-    private MyUserDetailService myUserDetailsService;
-    @Bean
-    DaoAuthenticationProvider  authenticationProvider() {
-    	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(myUserDetailsService);
-        return authenticationProvider;
-    }
+	@Autowired
+	AuthenticationConfiguration authenticationConfiguration;
 
+	public AuthenticationManager authenticationManager() throws Exception {
+	    AuthenticationManager authenticationManager = 
+	        authenticationConfiguration.getAuthenticationManager();
+	    return authenticationManager;
+	}
     //自定义 filter 交给工厂管理
     @Bean
     public LoginFilter loginFilter() throws Exception {
@@ -74,7 +72,7 @@ public class SecurityConfig {
         
 //		loginFilter.setAuthenticationManager(authenticationManagerBean());
         
-        loginFilter.setAuthenticationManager(new ProviderManager(authenticationProvider()));
+        loginFilter.setAuthenticationManager(authenticationManager());
         //认证成功处理
         loginFilter.setAuthenticationSuccessHandler((req, resp, authentication) -> {
             Map<String, Object> result = new HashMap<String, Object>();
