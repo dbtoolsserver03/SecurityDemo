@@ -16,23 +16,19 @@
 
 package com.baizhi.config;
 
-import static org.springframework.security.config.Customizer.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.baizhi.security.filter.KaptchaFilter;
-import com.baizhi.service.MyUserDetailService;
 
 /**
  * An example of explicitly configuring Spring Security with the defaults.
@@ -43,8 +39,6 @@ import com.baizhi.service.MyUserDetailService;
 @EnableWebSecurity
 public class SecurityConfigure {
 	
-	
-	
 	@Autowired
 	AuthenticationConfiguration authenticationConfiguration;
 
@@ -54,17 +48,6 @@ public class SecurityConfigure {
 	    return authenticationManager;
 	}
 	
-	
-//	
-    @Autowired
-    private MyUserDetailService myUserDetailsService;
-//    @Bean
-//    DaoAuthenticationProvider  authenticationProvider() {
-//    	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider ();
-//        authenticationProvider.setUserDetailsService(myUserDetailsService);
-//        return authenticationProvider;
-//    }
-    
     @Bean
     public KaptchaFilter kaptchaFilter() throws Exception {
         KaptchaFilter kaptchaFilter = new KaptchaFilter();
@@ -88,7 +71,6 @@ public class SecurityConfigure {
         return kaptchaFilter;
     }
     
-    
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		// @formatter:off
@@ -98,67 +80,77 @@ public class SecurityConfigure {
 				.requestMatchers("/login.html").permitAll()
 				.requestMatchers("/vc.jpg").permitAll()
 					.anyRequest().authenticated())
-//			.formLogin((form) -> form
-//					.loginPage("/login.html")
-//					)
+			.formLogin((form) -> form
+					.loginPage("/login.html")
+					)
 		
-		.formLogin((form) -> form
-				.loginPage("/login.html")
-				.loginProcessingUrl("/doLogin")
-				.usernameParameter("uname")
-				.passwordParameter("passwd")
-				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
-				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
-				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
-				.permitAll())
+//		.formLogin((form) -> form
+//				.loginPage("/login.html")
+//				.loginProcessingUrl("/doLogin")
+//				.usernameParameter("uname")
+//				.passwordParameter("passwd")
+//				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
+//				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
+//				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
+//				.permitAll())
 //		
 		
 			.logout((form) -> form.logoutUrl("/logout")
 					.logoutSuccessUrl("/login.html"))
 	
-			.csrf(AbstractHttpConfigurer::disable)//csrf 关闭
-			.authenticationProvider(authenticationProvider())
+			.csrf(AbstractHttpConfigurer::disable);//csrf 关闭
 			//				.httpBasic(withDefaults())
-			.formLogin(withDefaults());
+//			.formLogin(withDefaults());
 		
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
-        //http.addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
    
 		// @formatter:on
 		return http.build();
 	}
 	
-	
-	
 
 	 
+	
+//	
+//    @Autowired
+//    private MyUserDetailService myUserDetailsService;
+//    @Bean
+//    AuthenticationManager  authenticationManager() {
+//    	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider ();
+//        authenticationProvider.setUserDetailsService(myUserDetailsService);
+//        ProviderManager pm = new ProviderManager(authenticationProvider);
+//        return pm;
+//    }
+	
+	
     /**
      * 调用loadUserByUsername获得UserDetail信息，在AbstractUserDetailsAuthenticationProvider里执行用户状态检查
      *
      * @return
      */
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        // DaoAuthenticationProvider 从自定义的 userDetailsService.loadUserByUsername 方法获取UserDetails
-        authProvider.setUserDetailsService(myUserDetailsService);
-        // 设置密码编辑器
-        //authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
+//    @Bean
+//    public AuthenticationProvider authenticationProvider() {
+//        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+//        // DaoAuthenticationProvider 从自定义的 userDetailsService.loadUserByUsername 方法获取UserDetails
+//        authProvider.setUserDetailsService(myUserDetailsService);
+//        // 设置密码编辑器
+//        //authProvider.setPasswordEncoder(passwordEncoder());
+//        return authProvider;
+//    }
  
-    /**
-     * 登录时需要调用AuthenticationManager.authenticate执行一次校验
-     *
-     * @param config
-     * @return
-     * @throws Exception
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+//    /**
+//     * 登录时需要调用AuthenticationManager.authenticate执行一次校验
+//     *
+//     * @param config
+//     * @return
+//     * @throws Exception
+//     */
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+//        return config.getAuthenticationManager();
+//    }
 
 }
