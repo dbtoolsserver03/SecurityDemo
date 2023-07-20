@@ -77,7 +77,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-lang3</artifactId>
+		</dependency>
+
 		 <!--引入数据源-->
 		 <dependency>
 		     <groupId>com.alibaba</groupId>

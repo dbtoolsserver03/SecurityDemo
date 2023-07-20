@@ -5,7 +5,19 @@
     <title>用户登录</title>
 </head>
 <body>
+
+        <div th:if="${param.error}">
+            Invalid username and password.</div>
+        <div th:if="${param.logout}">
+            You have been logged out.</div>
+
+         request:<div th:text="${SPRING_SECURITY_LAST_EXCEPTION}"></div>
+         session:<div th:text="${session.SPRING_SECURITY_LAST_EXCEPTION}"></div>
+         
+
+
 <h1>用户登录</h1>
+
 <form method="post" th:action="@{/doLogin}">
     用户名: <input name="uname" type="text" value="root"> <br>
     密码: <input name="passwd" type="text"  value="123"> <br>

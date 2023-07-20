@@ -51,23 +51,6 @@ public class SecurityConfigure {
     @Bean
     public KaptchaFilter kaptchaFilter() throws Exception {
         KaptchaFilter kaptchaFilter = new KaptchaFilter();
-        kaptchaFilter.setFilterProcessesUrl("/doLogin");
-        kaptchaFilter.setUsernameParameter("uname");
-        kaptchaFilter.setPasswordParameter("passwd");
-        kaptchaFilter.setKaptchaParameter("kaptcha");
-        
-        //指定认证管理器
-        kaptchaFilter.setAuthenticationManager(authenticationManager());
-
-        //指定认证成功处理
-        kaptchaFilter.setAuthenticationSuccessHandler((req, resp, auth) -> {
-            resp.sendRedirect("/index.html");
-            
-        });
-        //指定认证失败处理
-        kaptchaFilter.setAuthenticationFailureHandler((req, resp, ex) -> {
-            resp.sendRedirect("/login.html");
-        });
         return kaptchaFilter;
     }
     
@@ -80,20 +63,17 @@ public class SecurityConfigure {
 				.requestMatchers("/login.html").permitAll()
 				.requestMatchers("/vc.jpg").permitAll()
 					.anyRequest().authenticated())
-			.formLogin((form) -> form
-					.loginPage("/login.html")
-					)
+
 		
-//		.formLogin((form) -> form
-//				.loginPage("/login.html")
-//				.loginProcessingUrl("/doLogin")
-//				.usernameParameter("uname")
-//				.passwordParameter("passwd")
-//				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
-//				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
-//				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
-//				.permitAll())
-//		
+		.formLogin((form) -> form
+				.loginPage("/login.html")
+				.loginProcessingUrl("/doLogin")
+				.usernameParameter("uname")
+				.passwordParameter("passwd")
+				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
+				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
+				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
+				.permitAll())
 		
 			.logout((form) -> form.logoutUrl("/logout")
 					.logoutSuccessUrl("/login.html"))
@@ -105,7 +85,7 @@ public class SecurityConfigure {
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
-        http.addFilterAt(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
    
 		// @formatter:on
 		return http.build();

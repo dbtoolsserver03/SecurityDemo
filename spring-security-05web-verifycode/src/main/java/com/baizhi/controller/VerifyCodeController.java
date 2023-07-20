@@ -18,6 +18,9 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class VerifyCodeController {
+
+	public static final String FORM_KAPTCHA_KEY = "kaptcha";
+	
     private final Producer producer;
     @Autowired
     public VerifyCodeController(Producer producer) {
@@ -30,7 +33,7 @@ public class VerifyCodeController {
     	//1.生成验证码
         String verifyCode = producer.createText();
         //2.保存到中 session
-        session.setAttribute("kaptcha", verifyCode);
+        session.setAttribute(FORM_KAPTCHA_KEY, verifyCode);
         //3.生成图片
         BufferedImage bi = producer.createImage(verifyCode);
         //4.响应图片
