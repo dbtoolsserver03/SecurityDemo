@@ -16,7 +16,6 @@
 
 package com.baizhi.config;
 
-import static org.springframework.security.config.Customizer.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +33,11 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 
+import com.baizhi.security.filter.LoginKaptchaFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -48,17 +49,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @EnableWebSecurity
 public class SecurityConfig {
 	
-//    @Autowired
-//    private MyUserDetailService myUserDetailsService;
-//    @Bean
-//    DaoAuthenticationProvider  authenticationProvider() {
-//    	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider();
-//        authenticationProvider.setUserDetailsService(myUserDetailsService);
-//        return authenticationProvider;
-//    }
-
-	
-	
 	@Autowired
 	AuthenticationConfiguration authenticationConfiguration;
 
@@ -68,23 +58,13 @@ public class SecurityConfig {
 	    return authenticationManager;
 	}
 	
-	
-	
     //自定义 filter 交给工厂管理
     @Bean
-    public LoginFilter loginFilter() throws Exception {
-        LoginFilter loginFilter = new LoginFilter();
+    public LoginKaptchaFilter loginKaptchaFilter() throws Exception {
+    	LoginKaptchaFilter loginFilter = new LoginKaptchaFilter();
         loginFilter.setFilterProcessesUrl("/doLogin");//指定认证 url
         loginFilter.setUsernameParameter("uname");//指定接收json 用户名 key
         loginFilter.setPasswordParameter("passwd");//指定接收 json 密码 key
-        
-        
-//		CasAuthenticationFilter filter = new CasAuthenticationFilter();
-//		CasAuthenticationProvider casAuthenticationProvider = casAuthenticationProvider(userDetailsService);
-//		filter.setAuthenticationManager(new ProviderManager(casAuthenticationProvider));
-        
-        
-//		loginFilter.setAuthenticationManager(authenticationManagerBean());
         
         loginFilter.setAuthenticationManager(authenticationManager());
         //认证成功处理
@@ -106,6 +86,8 @@ public class SecurityConfig {
             String s = new ObjectMapper().writeValueAsString(result);
             resp.getWriter().println(s);
         });
+        
+        loginFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
         return loginFilter;
     }
     
@@ -115,7 +97,7 @@ public class SecurityConfig {
 		http
 			.authorizeHttpRequests((authorize) -> authorize
 					.requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-					.requestMatchers("/login.html").permitAll()
+					.requestMatchers("/vc.jpg").permitAll()
 					.anyRequest().authenticated())
 			.exceptionHandling((exception) -> exception
 					.authenticationEntryPoint((req, resp, ex) -> {
@@ -123,16 +105,6 @@ public class SecurityConfig {
 	                    resp.setStatus(HttpStatus.UNAUTHORIZED.value());
 	                    resp.getWriter().println("请认证之后再去处理!");
 	                }))
-//			.formLogin(null)
-//			.formLogin((form) -> form
-//					.loginPage("/login.html")
-//					.loginProcessingUrl("/doLogin")
-//					.usernameParameter("uname")
-//					.passwordParameter("passwd")
-//					//						.successForwardUrl("/home")   //不会跳转到之前请求路径
-//					.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
-//					.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
-//					.permitAll())
 			.logout((form) -> form.logoutRequestMatcher(new OrRequestMatcher(
                     new AntPathRequestMatcher("/logout", HttpMethod.DELETE.name()),
                     new AntPathRequestMatcher("/logout", HttpMethod.GET.name())
@@ -147,14 +119,12 @@ public class SecurityConfig {
                 resp.getWriter().println(s);
             }))
 	
-			.csrf((csrf) -> csrf.disable())//csrf 关闭
-			//				.httpBasic(withDefaults())
-			.formLogin(withDefaults());
+			.csrf((csrf) -> csrf.disable());//csrf 关闭
 		
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
-        http.addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(loginKaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
    
 		// @formatter:on
 		return http.build();

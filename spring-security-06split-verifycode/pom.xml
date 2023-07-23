@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.1.2</version>
+		<version>3.1.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.baizhi</groupId>
@@ -81,7 +81,7 @@
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-lang3</artifactId>
 		</dependency>
-
+		
 		 <!--引入数据源-->
 		 <dependency>
 		     <groupId>com.alibaba</groupId>
@@ -89,6 +89,7 @@
 		     <version>1.2.18</version>
 		 </dependency>
 				
+						
 		<dependency>
 		    <groupId>com.github.penggle</groupId>
 		    <artifactId>kaptcha</artifactId>
