@@ -79,8 +79,6 @@ public class SecurityConfigure {
 					.logoutSuccessUrl("/login.html"))
 	
 			.csrf(AbstractHttpConfigurer::disable);//csrf 关闭
-			//				.httpBasic(withDefaults())
-//			.formLogin(withDefaults());
 		
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
