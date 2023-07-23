@@ -1,0 +1,44 @@
+package com.baizhi.security.filter;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.baizhi.security.exception.KaptchaNotMatchException;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+//自定义 filter
+public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
+
+    private static final String FORM_KAPTCHA_KEY = "kaptcha";
+
+    private String kaptchaParameter = FORM_KAPTCHA_KEY;
+
+    public String getKaptchaParameter() {
+        return kaptchaParameter;
+    }
+
+    public void setKaptchaParameter(String kaptchaParameter) {
+        this.kaptchaParameter = kaptchaParameter;
+    }
+
+	@Override
+	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+        if (!request.getMethod().equals("POST")) {
+            throw new AuthenticationServiceException("Authentication method not supported: " + request.getMethod());
+        }
+        //1.从请求中获取验证码
+        String verifyCode = request.getParameter(getKaptchaParameter());
+        //2.与 session 中验证码进行比较
+        String sessionVerifyCode = (String) request.getSession().getAttribute("kaptcha");
+        if (!ObjectUtils.isEmpty(verifyCode) && !ObjectUtils.isEmpty(sessionVerifyCode) &&
+                verifyCode.equalsIgnoreCase(sessionVerifyCode)) {
+            return super.attemptAuthentication(request, response);
+        }
+        throw new KaptchaNotMatchException("验证码不匹配!");
+		
+	}
+}
