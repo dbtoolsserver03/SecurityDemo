@@ -16,6 +16,8 @@
 
 package com.baizhi.config;
 
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +29,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import com.baizhi.security.filter.LoginKaptchaFilter;
 
@@ -41,6 +44,9 @@ import com.baizhi.security.filter.LoginKaptchaFilter;
 public class SecurityConfigure {
 	
 	@Autowired
+    DataSource dataSource;
+    
+	@Autowired
 	AuthenticationConfiguration authenticationConfiguration;
 
 	public AuthenticationManager authenticationManager() throws Exception {
@@ -48,19 +54,11 @@ public class SecurityConfigure {
 	        authenticationConfiguration.getAuthenticationManager();
 	    return authenticationManager;
 	}
-	
+
     @Bean
     public LoginKaptchaFilter kaptchaFilter() throws Exception {
-    	LoginKaptchaFilter loginFilter = new LoginKaptchaFilter();
-        loginFilter.setFilterProcessesUrl("/doLogin");//指定认证 url
-        loginFilter.setUsernameParameter("uname");//指定接收 用户名 key
-        loginFilter.setPasswordParameter("passwd");//指定接收 密码 key
-        
-        loginFilter.setAuthenticationManager(authenticationManager());    	
-    	
-        loginFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
-
-        return loginFilter;
+    	LoginKaptchaFilter kaptchaFilter = new LoginKaptchaFilter();
+        return kaptchaFilter;
     }
     
 	@Bean
@@ -76,7 +74,9 @@ public class SecurityConfigure {
 		
 		.formLogin((form) -> form
 				.loginPage("/login.html")
-
+				.loginProcessingUrl("/doLogin")
+				.usernameParameter("uname")
+				.passwordParameter("passwd")
 				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
 				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
 				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
@@ -90,12 +90,25 @@ public class SecurityConfigure {
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
-        http.addFilterAt(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
    
+        // 开启记住我
+		http.rememberMe((rememberMe) -> rememberMe
+				.tokenRepository(persistentTokenRepository())
+				//.alwaysRemember(true)
+				);
+        
 		// @formatter:on
 		return http.build();
 	}
-	
+    //指定数据库持久化
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        jdbcTokenRepository.setCreateTableOnStartup(false);//启动创建表结构
+        return jdbcTokenRepository;
+    }
 
 	 
 	
