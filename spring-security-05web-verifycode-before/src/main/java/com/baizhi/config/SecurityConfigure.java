@@ -28,7 +28,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.baizhi.security.filter.KaptchaFilter;
+import com.baizhi.security.filter.LoginKaptchaFilter;
 
 /**
  * An example of explicitly configuring Spring Security with the defaults.
@@ -49,8 +49,8 @@ public class SecurityConfigure {
 	}
 	
     @Bean
-    public KaptchaFilter kaptchaFilter() throws Exception {
-        KaptchaFilter kaptchaFilter = new KaptchaFilter();
+    public LoginKaptchaFilter kaptchaFilter() throws Exception {
+    	LoginKaptchaFilter kaptchaFilter = new LoginKaptchaFilter();
         return kaptchaFilter;
     }
     

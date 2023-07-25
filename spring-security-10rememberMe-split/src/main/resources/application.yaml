@@ -1,5 +1,5 @@
 server:
-  port: 8089
+  port: 8090
   servlet:
     session:
       timeout: 1
@@ -19,7 +19,6 @@ spring:
     mode: HTML
     
 # datasource：类型、驱动名、用户名、密码
-#com.alibaba.druid.pool.DruidDataSource
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -40,9 +39,5 @@ logging:
     org:
       springframework:
         web: DEBUG
-        security: DEBUG
 #    root: DEBUG
-
-
-    
   

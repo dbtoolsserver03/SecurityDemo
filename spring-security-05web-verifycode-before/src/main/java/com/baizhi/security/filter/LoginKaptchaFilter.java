@@ -16,7 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 //自定义验证码的 filter
-public class KaptchaFilter extends OncePerRequestFilter {
+public class LoginKaptchaFilter extends OncePerRequestFilter {
 
 
     private String kaptchaParameter = VerifyCodeController.FORM_KAPTCHA_KEY;
