@@ -1,8 +1,6 @@
 server:
-  port: 8088
-  servlet:
-    session:
-      timeout: 1
+  port: 8089
+
 spring:
   security:
     user:
