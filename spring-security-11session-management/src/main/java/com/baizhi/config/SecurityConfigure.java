@@ -35,7 +35,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import com.baizhi.security.filter.LoginKaptchaFilter;
 import com.baizhi.service.MyUserDetailService;
@@ -73,7 +72,7 @@ public class SecurityConfigure {
     	loginKaptchaFilter.setPasswordParameter("passwd");//指定接收 json 密码 key
     	loginKaptchaFilter.setRememberMeServices(rememberMeServices()); //设置认证成功时使用自定义rememberMeService
     	loginKaptchaFilter.setAuthenticationManager(authenticationManager());
-    	loginKaptchaFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
+//    	loginKaptchaFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
 
         
         return loginKaptchaFilter;
@@ -113,6 +112,19 @@ public class SecurityConfigure {
 			.logout((form) -> form.logoutUrl("/logout")
 					.logoutSuccessUrl("/login.html"))
 	
+			
+			.sessionManagement((sessions) -> sessions
+					.sessionConcurrency((concurrency) -> concurrency
+							.maximumSessions(1)
+							.expiredUrl("/login?expired")
+					))
+					
+					
+//			.sessionManagement((session)->session.maximumSessions(1) 
+//					.expiredUrl("/login")
+//					//.sessionRegistry(sessionRegistry()) //将 session 交给谁管理
+//					//.maxSessionsPreventsLogin(true)// 一旦登录 禁止再次登录
+//					)
 			.csrf(AbstractHttpConfigurer::disable);//csrf 关闭
 		
         // at: 用来某个 filter 替换过滤器链中哪个 filter

@@ -1,0 +1,48 @@
+server:
+  port: 8091
+  servlet:
+    session:
+      timeout: 1
+spring:
+  security:
+    user:
+      name: root
+      password: 123
+
+  thymeleaf:
+    cache: false
+    
+    # thymeleaf 默认配置
+    prefix: classpath:/templates/
+    suffix: .html
+    encoding: UTF-8
+    mode: HTML
+    
+# datasource：类型、驱动名、用户名、密码
+#com.alibaba.druid.pool.DruidDataSource
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/security?characterEncoding=UTF-8
+    username: root
+    password: 123456
+# mybatis配置mapper文件的位置和别名设置
+# 注意mapper目录（包）新建时必须使用"/"，而不是.
+mybatis:
+  type-aliases-package: com.baizhi.entity
+  mapper-locations:
+  - classpath:com/baizhi/mapper/*.xml
+  
+# log:为了显示mybatis运行SQL语句
+logging:
+  level:
+    '[com.baizhi]': debug
+    org:
+      springframework:
+        web: DEBUG
+        security: DEBUG
+#    root: DEBUG
+
+
+    
+  
