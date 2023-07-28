@@ -35,6 +35,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import com.baizhi.security.filter.LoginKaptchaFilter;
 import com.baizhi.service.MyUserDetailService;
@@ -72,8 +73,7 @@ public class SecurityConfigure {
     	loginKaptchaFilter.setPasswordParameter("passwd");//指定接收 json 密码 key
     	loginKaptchaFilter.setRememberMeServices(rememberMeServices()); //设置认证成功时使用自定义rememberMeService
     	loginKaptchaFilter.setAuthenticationManager(authenticationManager());
-//    	loginKaptchaFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
-
+    	loginKaptchaFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
         
         return loginKaptchaFilter;
     }
@@ -111,8 +111,6 @@ public class SecurityConfigure {
 		
 			.logout((form) -> form.logoutUrl("/logout")
 					.logoutSuccessUrl("/login.html"))
-	
-			
 			.sessionManagement((sessions) -> sessions
 					.sessionConcurrency((concurrency) -> concurrency
 							.maximumSessions(1)
@@ -127,6 +125,7 @@ public class SecurityConfigure {
 //					)
 			.csrf(AbstractHttpConfigurer::disable);//csrf 关闭
 		
+		
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
@@ -135,7 +134,7 @@ public class SecurityConfigure {
         // 开启记住我
 		http.rememberMe((rememberMe) -> rememberMe
 				.tokenRepository(persistentTokenRepository())
-//				.rememberMeServices(rememberMeServices())//　
+				.rememberMeServices(rememberMeServices())//　
 				//.alwaysRemember(true)
 				);
         
@@ -151,5 +150,19 @@ public class SecurityConfigure {
         return jdbcTokenRepository;
     }
 
+    
+	// @formatter:off
+//	@Bean
+//	public UserDetailsService userDetailsService() {
+//		UserDetails user = User.withDefaultPasswordEncoder()
+//				.username("user")
+//				.password("password")
+//				.roles("USER")
+//				.build();
+//		return new InMemoryUserDetailsManager(user);
+//	}
+	// @formatter:on
+	
+	
 
 }

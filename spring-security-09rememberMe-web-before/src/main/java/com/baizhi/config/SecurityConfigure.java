@@ -16,6 +16,10 @@
 
 package com.baizhi.config;
 
+import java.util.UUID;
+
+import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -26,10 +30,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import com.baizhi.security.filter.LoginKaptchaFilter;
+import com.baizhi.service.MyUserDetailService;
 
 /**
  * An example of explicitly configuring Spring Security with the defaults.
@@ -41,6 +49,12 @@ import com.baizhi.security.filter.LoginKaptchaFilter;
 public class SecurityConfigure {
 	
 	@Autowired
+    DataSource dataSource;
+    
+	@Autowired
+	MyUserDetailService myUserDetailService;
+	
+	@Autowired
 	AuthenticationConfiguration authenticationConfiguration;
 
 	public AuthenticationManager authenticationManager() throws Exception {
@@ -48,19 +62,17 @@ public class SecurityConfigure {
 	        authenticationConfiguration.getAuthenticationManager();
 	    return authenticationManager;
 	}
-	
+
     @Bean
     public LoginKaptchaFilter kaptchaFilter() throws Exception {
     	LoginKaptchaFilter loginKaptchaFilter = new LoginKaptchaFilter();
-    	
-    	loginKaptchaFilter.setFilterProcessesUrl("/doLogin");//指定认证 url
-    	loginKaptchaFilter.setUsernameParameter("uname");//指定接收json 用户名 key
-    	loginKaptchaFilter.setPasswordParameter("passwd");//指定接收 json 密码 key
-    	loginKaptchaFilter.setAuthenticationManager(authenticationManager());
-		
-    	loginKaptchaFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
-
         return loginKaptchaFilter;
+    }
+
+    
+    @Bean
+    public RememberMeServices rememberMeServices() {
+        return new PersistentTokenBasedRememberMeServices(UUID.randomUUID().toString(), myUserDetailService, persistentTokenRepository());
     }
     
 	@Bean
@@ -76,7 +88,13 @@ public class SecurityConfigure {
 		
 		.formLogin((form) -> form
 				.loginPage("/login.html")
-			
+				
+				
+				.loginProcessingUrl("/doLogin")
+				.usernameParameter("uname")
+				.passwordParameter("passwd")
+				
+				
 				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
 				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
 				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
@@ -90,52 +108,26 @@ public class SecurityConfigure {
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
-        http.addFilterAt(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
    
+        // 开启记住我
+		http.rememberMe((rememberMe) -> rememberMe
+				.tokenRepository(persistentTokenRepository())
+//				.rememberMeServices(rememberMeServices())//　
+				//.alwaysRemember(true)
+				);
+        
 		// @formatter:on
 		return http.build();
 	}
-	
+    //指定数据库持久化
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
+        jdbcTokenRepository.setDataSource(dataSource);
+        jdbcTokenRepository.setCreateTableOnStartup(false);//启动创建表结构
+        return jdbcTokenRepository;
+    }
 
-	 
-	
-//	
-//    @Autowired
-//    private MyUserDetailService myUserDetailsService;
-//    @Bean
-//    AuthenticationManager  authenticationManager() {
-//    	DaoAuthenticationProvider  authenticationProvider = new DaoAuthenticationProvider ();
-//        authenticationProvider.setUserDetailsService(myUserDetailsService);
-//        ProviderManager pm = new ProviderManager(authenticationProvider);
-//        return pm;
-//    }
-	
-	
-    /**
-     * 调用loadUserByUsername获得UserDetail信息，在AbstractUserDetailsAuthenticationProvider里执行用户状态检查
-     *
-     * @return
-     */
-//    @Bean
-//    public AuthenticationProvider authenticationProvider() {
-//        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-//        // DaoAuthenticationProvider 从自定义的 userDetailsService.loadUserByUsername 方法获取UserDetails
-//        authProvider.setUserDetailsService(myUserDetailsService);
-//        // 设置密码编辑器
-//        //authProvider.setPasswordEncoder(passwordEncoder());
-//        return authProvider;
-//    }
- 
-//    /**
-//     * 登录时需要调用AuthenticationManager.authenticate执行一次校验
-//     *
-//     * @param config
-//     * @return
-//     * @throws Exception
-//     */
-//    @Bean
-//    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-//        return config.getAuthenticationManager();
-//    }
 
 }

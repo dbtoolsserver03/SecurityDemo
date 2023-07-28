@@ -27,9 +27,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
-import com.baizhi.security.filter.LoginKaptchaFilter;
+import com.baizhi.security.filter.KaptchaFilter;
 
 /**
  * An example of explicitly configuring Spring Security with the defaults.
@@ -50,17 +49,9 @@ public class SecurityConfigure {
 	}
 	
     @Bean
-    public LoginKaptchaFilter kaptchaFilter() throws Exception {
-    	LoginKaptchaFilter loginKaptchaFilter = new LoginKaptchaFilter();
-    	
-    	loginKaptchaFilter.setFilterProcessesUrl("/doLogin");//指定认证 url
-    	loginKaptchaFilter.setUsernameParameter("uname");//指定接收json 用户名 key
-    	loginKaptchaFilter.setPasswordParameter("passwd");//指定接收 json 密码 key
-    	loginKaptchaFilter.setAuthenticationManager(authenticationManager());
-		
-    	loginKaptchaFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
-
-        return loginKaptchaFilter;
+    public KaptchaFilter kaptchaFilter() throws Exception {
+        KaptchaFilter kaptchaFilter = new KaptchaFilter();
+        return kaptchaFilter;
     }
     
 	@Bean
@@ -76,7 +67,9 @@ public class SecurityConfigure {
 		
 		.formLogin((form) -> form
 				.loginPage("/login.html")
-			
+				.loginProcessingUrl("/doLogin")
+				.usernameParameter("uname")
+				.passwordParameter("passwd")
 				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
 				.defaultSuccessUrl("/index.html", true)//如果之前有请求路径，会优先跳转之前请求路径，可以传入第二个参数进行修改。
 				.failureUrl("/login.html")//重定向到登录页面 失败之后redirect跳转
@@ -90,7 +83,7 @@ public class SecurityConfigure {
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
-        http.addFilterAt(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
    
 		// @formatter:on
 		return http.build();

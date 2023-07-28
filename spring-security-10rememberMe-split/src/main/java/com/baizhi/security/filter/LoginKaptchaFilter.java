@@ -45,6 +45,13 @@ public class LoginKaptchaFilter extends UsernamePasswordAuthenticationFilter {
             String password = userInfo.get(getPasswordParameter());//用来接收密码
             //2.获取 session 中验证码
             String sessionVerifyCode = (String) request.getSession().getAttribute("kaptcha");
+            
+            
+            System.out.println("kaptcha:" + kaptcha);
+            System.out.println("sessionVerifyCode:" + sessionVerifyCode);
+
+            
+            
             if (!ObjectUtils.isEmpty(kaptcha) && !ObjectUtils.isEmpty(sessionVerifyCode) &&
                     kaptcha.equalsIgnoreCase(sessionVerifyCode)) {
             	
