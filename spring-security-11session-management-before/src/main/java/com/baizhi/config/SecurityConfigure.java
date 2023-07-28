@@ -35,7 +35,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
 import com.baizhi.security.filter.LoginKaptchaFilter;
 import com.baizhi.service.MyUserDetailService;
@@ -68,13 +67,6 @@ public class SecurityConfigure {
     public LoginKaptchaFilter kaptchaFilter() throws Exception {
     	LoginKaptchaFilter loginKaptchaFilter = new LoginKaptchaFilter();
     	
-    	loginKaptchaFilter.setFilterProcessesUrl("/doLogin");//指定认证 url
-    	loginKaptchaFilter.setUsernameParameter("uname");//指定接收json 用户名 key
-    	loginKaptchaFilter.setPasswordParameter("passwd");//指定接收 json 密码 key
-    	loginKaptchaFilter.setRememberMeServices(rememberMeServices()); //设置认证成功时使用自定义rememberMeService
-    	loginKaptchaFilter.setAuthenticationManager(authenticationManager());
-    	loginKaptchaFilter.setSecurityContextRepository(new HttpSessionSecurityContextRepository());
-        
         return loginKaptchaFilter;
     }
 
@@ -99,9 +91,9 @@ public class SecurityConfigure {
 				.loginPage("/login.html")
 				
 				
-//				.loginProcessingUrl("/doLogin")
-//				.usernameParameter("uname")
-//				.passwordParameter("passwd")
+				.loginProcessingUrl("/doLogin")
+				.usernameParameter("uname")
+				.passwordParameter("passwd")
 				
 				
 				//						.successForwardUrl("/home")   //不会跳转到之前请求路径
@@ -133,7 +125,7 @@ public class SecurityConfigure {
         // at: 用来某个 filter 替换过滤器链中哪个 filter
         // before: 放在过滤器链中哪个 filter 之前
         // after: 放在过滤器链中那个 filter 之后
-        http.addFilterAt(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(kaptchaFilter(), UsernamePasswordAuthenticationFilter.class);
    
         // 开启记住我
 		http.rememberMe((rememberMe) -> rememberMe
