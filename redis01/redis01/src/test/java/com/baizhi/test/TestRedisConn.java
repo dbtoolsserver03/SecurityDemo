@@ -12,10 +12,10 @@ public class TestRedisConn {
 	@Test
 	public void testConn() {
 		//  ps -ef | grep redis
-
+		Jedis jedis = null;
 		//创建jedis客户端对象
 		//参数1:主机ip 参数2:端口
-		Jedis jedis = new Jedis("127.0.0.1", 6379);
+		jedis = new Jedis("172.16.158.1", 6379);
 		System.out.println(jedis.get("name"));
 		
 		jedis = new Jedis("172.16.158.131", 6379);
